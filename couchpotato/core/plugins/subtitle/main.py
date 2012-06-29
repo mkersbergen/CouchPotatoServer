@@ -15,6 +15,7 @@ class Subtitle(Plugin):
 
     def __init__(self):
         addEvent('renamer.before', self.searchSingle)
+        addEvent('searcher.checksubtitleavailability', self.searchMulti)
 
     def searchLibrary(self):
 
@@ -39,6 +40,21 @@ class Subtitle(Plugin):
                     subliminal.list_subtitles(files, cache_dir = Env.get('cache_dir'), multi = True, languages = self.getLanguages(), services = self.services)
 
         #db.close()
+
+    def searchMulti(self, group):
+        if not group:
+            return
+
+        # find subtitles for those files
+        subtitles = []
+        for results in group:
+            url = results['url']
+            subtitles.append(url[url.rfind('/') + 1:])
+        
+        language=self.getLanguages()
+        result=subliminal.list_subtitles(subtitles, cache_dir = Env.get('cache_dir'), multi = True,languages=language[0] , services = self.services)
+        print result
+
 
     def searchSingle(self, group):
 

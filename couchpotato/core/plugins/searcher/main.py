@@ -97,7 +97,7 @@ class Searcher(Plugin):
             for release in movie['releases']:
                 if release['quality']['order'] <= quality_type['quality']['order'] and release['status_id'] is not available_status.get('id'):
                     has_better_quality += 1
-
+            
             # Don't search for quality lower then already available.
             if has_better_quality is 0:
 
@@ -111,6 +111,9 @@ class Searcher(Plugin):
                 # Check if movie isn't deleted while searching
                 if not db.query(Movie).filter_by(id = movie.get('id')).first():
                     break
+
+                # only download subtitles if primary (first listed) subtitle is available with high confidence level
+                fireEvent('searcher.checksubtitleavailability',sorted_results)
 
                 # Add them to this movie releases list
                 for nzb in sorted_results:
