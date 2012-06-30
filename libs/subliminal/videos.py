@@ -59,6 +59,25 @@ class Video(object):
             self._compute_hashes()
 
     @classmethod
+    def from_file(cls, path):
+        guess = guessit.guess_file_info(path, 'autodetect')
+        if guess['type'] == 'episode' and 'series' in guess and 'season' in guess and 'episodeNumber' in guess:
+            title = None
+            if 'title' in guess:
+                title = guess['title']
+            result = Episode(path, guess['series'], guess['season'], guess['episodeNumber'], title, guess)
+        if guess['type'] == 'movie' and 'title' in guess:
+            year = None
+            if 'year' in guess:
+                year = guess['year']
+            result = Movie(path, guess['title'], year, guess)
+        if not result:
+            result = UnknownVideo(path, guess)
+        if not isinstance(result, cls):
+            raise ValueError('Video is not of requested type')
+        return result
+
+    @classmethod
     def from_path(cls, path):
         """Create a :class:`Video` subclass guessing all informations from the given path
 
@@ -230,7 +249,9 @@ def scan(entry, max_depth=3, scan_filter=None, depth=0):
         video = Video.from_path(entry)
         return [(video, video.scan())]
     logger.warning(u'Scanning entry %s failed with depth %d/%d' % (entry, depth, max_depth))
-    return []  # anything else
+    video=Video.from_file()
+    return [video]
+    
 
 
 def hash_opensubtitles(path):

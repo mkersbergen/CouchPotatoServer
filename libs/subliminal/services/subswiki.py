@@ -19,7 +19,7 @@ from . import ServiceBase
 from ..exceptions import ServiceError
 from ..language import language_set, Language
 from ..subtitles import get_subtitle_path, ResultSubtitle
-from ..videos import Episode, Movie
+from ..videos import Episode, Movie, UnknownVideo
 from bs4 import BeautifulSoup
 from subliminal.utils import get_keywords, split_keyword
 import logging
@@ -38,7 +38,7 @@ class SubsWiki(ServiceBase):
                     u'Català': Language('cat'), u'Brazilian': Language('por-BR'), u'English (US)': Language('eng-US'),
                     u'English (UK)': Language('eng-GB')}
     language_code = 'name'
-    videos = [Episode, Movie]
+    videos = [Episode, Movie,UnknownVideo]
     require_video = False
     release_pattern = re.compile('\nVersion (.+), ([0-9]+).([0-9])+ MBs')
     required_features = ['permissive']

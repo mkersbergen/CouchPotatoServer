@@ -42,7 +42,7 @@ class Podnapisi(ServiceBase):
                     'pb': Language('por-BR'), Language('por-BR'): 'pb',
                     'ag': Language('spa-AR'), Language('spa-AR'): 'ag',
                     'cyr': Language('srp')}
-    videos = [Episode, Movie]
+    videos = [Episode, Movie,UnkownVideo]
     require_video = True
 
     def __init__(self, config=None):

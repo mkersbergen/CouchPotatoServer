@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with subliminal.  If not, see <http://www.gnu.org/licenses/>.
-from .api import list_subtitles, download_subtitles
+from .api import list_subtitles, download_subtitles,list_subtitles_2
 from .async import Pool
 from .core import (SERVICES, LANGUAGE_INDEX, SERVICE_INDEX, SERVICE_CONFIDENCE,
     MATCHING_CONFIDENCE)
@@ -30,5 +30,5 @@ except ImportError:
 
 
 __all__ = ['SERVICES', 'LANGUAGE_INDEX', 'SERVICE_INDEX', 'SERVICE_CONFIDENCE',
-           'MATCHING_CONFIDENCE', 'list_subtitles', 'download_subtitles', 'Pool']
+           'MATCHING_CONFIDENCE', 'list_subtitles', 'list_subtitles_2' 'download_subtitles', 'Pool']
 logging.getLogger(__name__).addHandler(NullHandler())

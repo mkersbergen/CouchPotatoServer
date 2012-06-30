@@ -20,7 +20,7 @@ from ..exceptions import ServiceError, DownloadFailedError
 from ..language import Language, language_set
 from ..subtitles import get_subtitle_path, ResultSubtitle
 from ..utils import to_unicode
-from ..videos import Episode, Movie
+from ..videos import Episode, Movie, UnknownVideo
 import gzip
 import logging
 import os.path
@@ -77,7 +77,7 @@ class OpenSubtitles(ServiceBase):
     language_map = {'mol': Language('rum-MD'), 'scc': Language('srp'), 'pob': Language('por-BR'),
                     Language('rum-MD'): 'mol', Language('srp'): 'scc', Language('por-BR'): 'pob'}
     language_code = 'alpha3'
-    videos = [Episode, Movie]
+    videos = [Episode, Movie,UnknownVideo]
     require_video = False
     confidence_order = ['moviehash', 'imdbid', 'fulltext']
 

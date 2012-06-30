@@ -52,8 +52,10 @@ class Subtitle(Plugin):
             subtitles.append(url[url.rfind('/') + 1:])
         
         language=self.getLanguages()
-        result=subliminal.list_subtitles(subtitles, cache_dir = Env.get('cache_dir'), multi = True,languages=language[0] , services = self.services)
-        print result
+        #result=subliminal.list_subtitles(subtitles, cache_dir = Env.get('cache_dir'), multi = True,languages={language[0]} , services = self.services)
+        result=subliminal.list_subtitles_2(subtitles, cache_dir = Env.get('cache_dir'), multi = True,languages={language[0]} , services = self.services)
+        #ist_subtitles(paths, languages=None, services=None, force=True, multi=False, cache_dir=None, max_depth=3, scan_filter=None):
+        return result
 
 
     def searchSingle(self, group):

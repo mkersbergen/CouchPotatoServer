@@ -22,11 +22,47 @@ from .language import language_set, language_list, LANGUAGES
 import logging
 
 
-__all__ = ['list_subtitles', 'download_subtitles']
+__all__ = ['list_subtitles', 'download_subtitles', 'list_subtitles_2']
 logger = logging.getLogger(__name__)
 
 
 def list_subtitles(paths, languages=None, services=None, force=True, multi=False, cache_dir=None, max_depth=3, scan_filter=None):
+    """List subtitles in given paths according to the criteria
+
+    :param paths: path(s) to video file or folder
+    :type paths: string or list
+    :param languages: languages to search for, in preferred order
+    :type languages: list of :class:`~subliminal.language.Language` or string
+    :param list services: services to use for the search, in preferred order
+    :param bool force: force searching for subtitles even if some are detected
+    :param bool multi: search multiple languages for the same video
+    :param string cache_dir: path to the cache directory to use
+    :param int max_depth: maximum depth for scanning entries
+    :param function scan_filter: filter function that takes a path as argument and returns a boolean indicating whether it has to be filtered out (``True``) or not (``False``)
+    :return: found subtitles
+    :rtype: dict of :class:`~subliminal.videos.Video` => [:class:`~subliminal.subtitles.ResultSubtitle`]
+
+    """
+    services = services or SERVICES
+    languages = language_set(languages) if languages is not None else language_set(LANGUAGES)
+    if isinstance(paths, basestring):
+        paths = [paths]
+    if any([not isinstance(p, unicode) for p in paths]):
+        logger.warning(u'Not all entries are unicode')
+    results = []
+    service_instances = {}
+    tasks = create_list_tasks(paths, languages, services, force, multi, cache_dir, max_depth, scan_filter)
+    for task in tasks:
+        try:
+            result = consume_task(task, service_instances)
+            results.append((task.video, result))
+        except:
+            logger.error(u'Error consuming task %r' % task, exc_info=True)
+    for service_instance in service_instances.itervalues():
+        service_instance.terminate()
+    return group_by_video(results)
+
+def list_subtitles_2(paths, languages=None, services=None, force=True, multi=False, cache_dir=None, max_depth=3, scan_filter=None):
     """List subtitles in given paths according to the criteria
 
     :param paths: path(s) to video file or folder

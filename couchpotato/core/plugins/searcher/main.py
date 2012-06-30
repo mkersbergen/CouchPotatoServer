@@ -113,7 +113,7 @@ class Searcher(Plugin):
                     break
 
                 # only download subtitles if primary (first listed) subtitle is available with high confidence level
-                fireEvent('searcher.checksubtitleavailability',sorted_results)
+                result = fireEvent('searcher.checksubtitleavailability',sorted_results)
 
                 # Add them to this movie releases list
                 for nzb in sorted_results:
