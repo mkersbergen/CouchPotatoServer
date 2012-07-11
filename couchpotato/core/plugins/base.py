@@ -95,7 +95,7 @@ class Plugin(object):
         return False
 
     # http request
-    def urlopen(self, url, timeout = 30, params = {}, headers = {}, multipart = False, show_error = True):
+    def urlopen(self, url, timeout = 30, params = {}, headers = {}, opener = None, multipart = False, show_error = True):
 
         # Fill in some headers
         if not headers.get('Referer'):
@@ -130,7 +130,10 @@ class Plugin(object):
                 data = tryUrlencode(params) if len(params) > 0 else None
                 request = urllib2.Request(url, data, headers)
 
-                data = urllib2.urlopen(request, timeout = timeout).read()
+                if opener:
+                    data = opener.open(request, timeout = timeout).read()
+                else:
+                    data = urllib2.urlopen(request, timeout = timeout).read()
 
             self.http_failed_request[host] = 0
         except IOError:
@@ -216,6 +219,7 @@ class Plugin(object):
                     del kwargs['cache_timeout']
 
                 data = self.urlopen(url, **kwargs)
+
                 if data:
                     self.setCache(cache_key, data, timeout = cache_timeout)
                 return data

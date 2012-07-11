@@ -21,6 +21,7 @@ class IMDBAPI(MovieProvider):
 
     def __init__(self):
         addEvent('movie.search', self.search)
+        addEvent('movie.searchimdb', self.search)
         addEvent('movie.info', self.getInfo)
 
     def search(self, q, limit = 12):
@@ -89,7 +90,7 @@ class IMDBAPI(MovieProvider):
                     'poster': [movie.get('Poster', '')] if movie.get('Poster') and len(movie.get('Poster', '')) > 4 else [],
                 },
                 'rating': {
-                    'imdb': (tryFloat(movie.get('imdbRating', 0)), tryInt(movie.get('imdbVotes', ''))),
+                    'imdb': (tryFloat(movie.get('imdbRating', 0)), tryInt(movie.get('imdbVotes', '').replace(',', ''))),
                     #'rotten': (tryFloat(movie.get('tomatoRating', 0)), tryInt(movie.get('tomatoReviews', 0))),
                 },
                 'imdb': str(movie.get('imdbID', '')),

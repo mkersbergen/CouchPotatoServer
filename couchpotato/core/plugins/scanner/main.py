@@ -23,7 +23,7 @@ class Scanner(Plugin):
         'media': 314572800, # 300MB
         'trailer': 1048576, # 1MB
     }
-    ignored_in_path = ['_unpack', '_failed_', '_unknown_', '_exists_', '.appledouble', '.appledb', '.appledesktop', os.path.sep + '._', '.ds_store', 'cp.cpnfo'] #unpacking, smb-crap, hidden files
+    ignored_in_path = ['_unpack', '_failed_', '_unknown_', '_exists_', '_failed_remove_', '_failed_rename_', '.appledouble', '.appledb', '.appledesktop', os.path.sep + '._', '.ds_store', 'cp.cpnfo'] #unpacking, smb-crap, hidden files
     ignore_names = ['extract', 'extracting', 'extracted', 'movie', 'movies', 'film', 'films', 'download', 'downloads', 'video_ts', 'audio_ts', 'bdmv', 'certificate']
     extensions = {
         'movie': ['mkv', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4', 'm2ts', 'iso', 'img', 'mdf', 'ts', 'm4v'],
@@ -151,6 +151,8 @@ class Scanner(Plugin):
                         files.append(os.path.join(root, filename))
             except:
                 log.error('Failed getting files from %s: %s', (folder, traceback.format_exc()))
+        else:
+            files = [ss(x) for x in files]
 
         db = get_session()
 
@@ -458,7 +460,7 @@ class Scanner(Plugin):
             scan_result = []
             for p in paths:
                 if not group['is_dvd']:
-                    video = Video.from_path(p)
+                    video = Video.from_path(toUnicode(p))
                     video_result = [(video, video.scan())]
                     scan_result.extend(video_result)
 
@@ -780,7 +782,7 @@ class Scanner(Plugin):
         guess = {}
         if file_name:
             try:
-                guess = guess_movie_info(file_name)
+                guess = guess_movie_info(toUnicode(file_name))
                 if guess.get('title') and guess.get('year'):
                     guess = {
                         'name': guess.get('title'),

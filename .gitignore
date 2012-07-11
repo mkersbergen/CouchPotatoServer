@@ -1,4 +1,4 @@
-/_source/
-/data/
 *.pyc
+/data/
+/_source/
 *.pyproj
