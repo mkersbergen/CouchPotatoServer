@@ -40,6 +40,7 @@ def create_list_tasks(paths, languages, services, force, multi, cache_dir, max_d
 
     :param paths: path(s) to video file or folder
     :type paths: string or list
+    
     :param set languages: languages to search for
     :param list services: services to use for the search
     :param bool force: force searching for subtitles even if some are detected

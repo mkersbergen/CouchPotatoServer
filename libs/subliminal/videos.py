@@ -136,35 +136,41 @@ class Video(object):
         :rtype: list of :class:`~subliminal.subtitles.Subtitle`
 
         """
+        if self.exists:
+            basepath = os.path.splitext(self.path)[0]
+            parsepath=self.path
         if not self.exists:
-            return []
-        basepath = os.path.splitext(self.path)[0]
+            parsepath=self.release
         results = []
         video_infos = None
         try:
-            video_infos = enzyme.parse(self.path)
-            logger.debug(u'Succeeded parsing %s with enzyme: %r' % (self.path, video_infos))
+            video_infos = enzyme.parse(parsepath)
+            logger.debug(u'Succeeded parsing %s with enzyme: %r' % (parsepath, video_infos))
         except:
-            logger.debug(u'Failed parsing %s with enzyme' % self.path)
-        if isinstance(video_infos, enzyme.core.AVContainer):
-            results.extend([subtitles.EmbeddedSubtitle.from_enzyme(self.path, s) for s in video_infos.subtitles])
+            logger.debug(u'Failed parsing %s with enzyme' % parsepath)
+        if video_infos:
+            if isinstance(video_infos, enzyme.core.AVContainer):
+                results.extend([subtitles.EmbeddedSubtitle.from_enzyme(parsepath, s) for s in video_infos.subtitles])
 
         # cannot use glob here because it chokes if there are any square
         # brackets inside the filename, so we have to use basic string
         # startswith/endswith comparisons
-        folder, basename = os.path.split(basepath)
-        existing = [f for f in os.listdir(folder) if f.startswith(basename)]
-        for path in existing:
-            for ext in subtitles.EXTENSIONS:
-                if path.endswith(ext):
-                    possible_lang = path[len(basename) + 1:-len(ext)]
-                    if possible_lang == '':
-                        results.append(subtitles.ExternalSubtitle(path, None))
-                    else:
-                        lang = guessit.Language(possible_lang)
-                        if lang:
-                            results.append(subtitles.ExternalSubtitle(path, lang))
-        return results
+        if self.exists:
+            folder, basename = os.path.split(basepath)
+            existing = [f for f in os.listdir(folder) if f.startswith(basename)]
+            for path in existing:
+                for ext in subtitles.EXTENSIONS:
+                    if path.endswith(ext):
+                        possible_lang = path[len(basename) + 1:-len(ext)]
+                        if possible_lang == '':
+                            results.append(subtitles.ExternalSubtitle(path, None))
+                        else:
+                            lang = guessit.Language(possible_lang)
+                            if lang:
+                                results.append(subtitles.ExternalSubtitle(path, lang))
+            return results
+        #if we get here we have to deal with a file that does not exist
+
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.release)
@@ -214,6 +220,7 @@ class Movie(Video):
 
 
 class UnknownVideo(Video):
+    
     """Unknown video"""
     pass
 
@@ -239,7 +246,7 @@ def scan(entry, max_depth=3, scan_filter=None, depth=0):
         for e in os.listdir(entry):
             result.extend(scan(os.path.join(entry, e), max_depth, scan_filter, depth + 1))
         return result
-    if os.path.isfile(entry) or depth == 0:
+    if os.path.isfile(entry):
         logger.debug(u'Scanning file %s with depth %d/%d' % (entry, depth, max_depth))
         if depth != 0:  # trust the user: only check for valid format if recursing
             if mimetypes.guess_type(entry)[0] not in MIMETYPES and os.path.splitext(entry)[1] not in EXTENSIONS:
@@ -249,7 +256,7 @@ def scan(entry, max_depth=3, scan_filter=None, depth=0):
         video = Video.from_path(entry)
         return [(video, video.scan())]
     logger.warning(u'Scanning entry %s failed with depth %d/%d' % (entry, depth, max_depth))
-    video=Video.from_file()
+    video=Video.from_file(entry)
     return [video]
     
 

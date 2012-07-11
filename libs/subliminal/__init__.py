@@ -22,7 +22,7 @@ from .core import (SERVICES, LANGUAGE_INDEX, SERVICE_INDEX, SERVICE_CONFIDENCE,
 from .infos import __version__
 import logging
 try:
-    from logging import NullHandler
+    from logging import NullHandler,FileHandler
 except ImportError:
     class NullHandler(logging.Handler):
         def emit(self, record):
@@ -32,3 +32,4 @@ except ImportError:
 __all__ = ['SERVICES', 'LANGUAGE_INDEX', 'SERVICE_INDEX', 'SERVICE_CONFIDENCE',
            'MATCHING_CONFIDENCE', 'list_subtitles', 'list_subtitles_2' 'download_subtitles', 'Pool']
 logging.getLogger(__name__).addHandler(NullHandler())
+#logging.getLogger(__name__).addHandler(FileHandler('blub.log'))

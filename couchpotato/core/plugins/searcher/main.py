@@ -116,6 +116,7 @@ class Searcher(Plugin):
                 result = fireEvent('searcher.checksubtitleavailability',sorted_results)
 
                 # Add them to this movie releases list
+
                 for nzb in sorted_results:
 
                     rls = db.query(Release).filter_by(identifier = md5(nzb['url'])).first()
