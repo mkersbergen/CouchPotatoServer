@@ -135,6 +135,8 @@ class OpenSubtitles(ServiceBase):
             results = self.query(video.path or video.release, languages, query=video.series)
         elif isinstance(video, Movie):
             results = self.query(video.path or video.release, languages, query=video.title)
+        elif isinstance(video, UnknownVideo):
+            results = self.query(video.release, languages, query=video.release)
         return results
 
     def download(self, subtitle):

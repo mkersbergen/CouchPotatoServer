@@ -117,7 +117,7 @@ class Pool(object):
             paths = [paths]
         if any([not isinstance(p, unicode) for p in paths]):
             logger.warning(u'Not all entries are unicode')
-        tasks = create_list_tasks(paths, languages, services, force, multi, cache_dir, max_depth, scan_filter)
+        tasks = create_list_tasks(paths, languages, services, force, multi, cache_dir, max_depth, scan_filter,fileexists=True)
         for task in tasks:
             self.tasks.put(task)
         self.join()

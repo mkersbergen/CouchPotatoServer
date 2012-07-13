@@ -51,7 +51,7 @@ def list_subtitles(paths, languages=None, services=None, force=True, multi=False
         logger.warning(u'Not all entries are unicode')
     results = []
     service_instances = {}
-    tasks = create_list_tasks(paths, languages, services, force, multi, cache_dir, max_depth, scan_filter)
+    tasks = create_list_tasks(paths, languages, services, force, multi, cache_dir, max_depth, scan_filter,fileexists=True)
     for task in tasks:
         try:
             result = consume_task(task, service_instances)
@@ -87,7 +87,7 @@ def list_subtitles_2(paths, languages=None, services=None, force=True, multi=Fal
         logger.warning(u'Not all entries are unicode')
     results = []
     service_instances = {}
-    tasks = create_list_tasks(paths, languages, services, force, multi, cache_dir, max_depth, scan_filter)
+    tasks = create_list_tasks(paths, languages, services, force, multi, cache_dir, max_depth, scan_filter,fileexists=False)
     for task in tasks:
         try:
             result = consume_task(task, service_instances)

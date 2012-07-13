@@ -63,6 +63,7 @@ class Video(object):
     @classmethod
     def from_file(cls, path):
         guess = guessit.guess_file_info(path, 'autodetect')
+        result=UnknownVideo(path,guess)
         if guess['type'] == 'episode' and 'series' in guess and 'season' in guess and 'episodeNumber' in guess:
             title = None
             if 'title' in guess:
@@ -73,8 +74,6 @@ class Video(object):
             if 'year' in guess:
                 year = guess['year']
             result = Movie(path, guess['title'], year, guess)
-        if not result:
-            result = UnknownVideo(path, guess)
         if not isinstance(result, cls):
             raise ValueError('Video is not of requested type')
         return result
@@ -226,6 +225,9 @@ class UnknownVideo(Video):
     """Unknown video"""
     pass
 
+def scandescription(entry):
+    video= Video.from_file(entry)
+    return video
 
 def scan(entry, max_depth=3, scan_filter=None, depth=0):
     """Scan a path for videos and subtitles

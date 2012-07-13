@@ -19,13 +19,14 @@ from .exceptions import DownloadFailedError
 from .services import ServiceConfig
 from .tasks import DownloadTask, ListTask
 from .utils import get_keywords
-from .videos import Episode, Movie, scan
+from .videos import Episode, Movie, scan,scandescription
 from .language import Language
 from collections import defaultdict
 from itertools import groupby
 import bs4
 import guessit
 import logging
+
 
 
 __all__ = ['SERVICES', 'LANGUAGE_INDEX', 'SERVICE_INDEX', 'SERVICE_CONFIDENCE', 'MATCHING_CONFIDENCE',
@@ -36,7 +37,7 @@ SERVICES = ['opensubtitles', 'bierdopje', 'subswiki', 'subtitulos', 'thesubdb', 
 LANGUAGE_INDEX, SERVICE_INDEX, SERVICE_CONFIDENCE, MATCHING_CONFIDENCE = range(4)
 
 
-def create_list_tasks(paths, languages, services, force, multi, cache_dir, max_depth, scan_filter):
+def create_list_tasks(paths, languages, services, force, multi, cache_dir, max_depth, scan_filter,fileexists):
     """Create a list of :class:`~subliminal.tasks.ListTask` from one or more paths using the given criteria
 
     :param paths: path(s) to video file or folder
@@ -46,6 +47,7 @@ def create_list_tasks(paths, languages, services, force, multi, cache_dir, max_d
     :param list services: services to use for the search
     :param bool force: force searching for subtitles even if some are detected
     :param bool multi: search multiple languages for the same video
+    :param bool fileexists: if false, try to find subtitles matching filename only
     :param string cache_dir: path to the cache directory to use
     :param int max_depth: maximum depth for scanning entries
     :param function scan_filter: filter function that takes a path as argument and returns a boolean indicating whether it has to be filtered out (``True``) or not (``False``)
@@ -54,33 +56,53 @@ def create_list_tasks(paths, languages, services, force, multi, cache_dir, max_d
 
     """
     scan_result = []
-    for p in paths:
-        scan_result.extend(scan(p, max_depth, scan_filter))
-    logger.debug(u'Found %d videos in %r with maximum depth %d' % (len(scan_result), paths, max_depth))
     tasks = []
     config = ServiceConfig(multi, cache_dir)
     services = filter_services(services)
-    for video, detected_subtitles in scan_result:
-        detected_languages = set(s.language for s in detected_subtitles)
-        wanted_languages = languages.copy()
-        if not force and multi:
-            wanted_languages -= detected_languages
-            if not wanted_languages:
-                logger.debug(u'No need to list multi subtitles %r for %r because %r detected' % (languages, video, detected_languages))
+    wanted_languages = languages.copy()
+
+    if fileexists:
+        for p in paths:
+            scan_result.extend(scan(p, max_depth, scan_filter))
+        logger.debug(u'Found %d videos in %r with maximum depth %d' % (len(scan_result), paths, max_depth))
+    
+        for video, detected_subtitles in scan_result:
+            detected_languages = set(s.language for s in detected_subtitles)
+     
+            if not force and multi:
+                wanted_languages -= detected_languages
+                if not wanted_languages:
+                    logger.debug(u'No need to list multi subtitles %r for %r because %r detected' % (languages, video, detected_languages))
+                    continue
+            if not force and not multi and Language('Undetermined') in detected_languages:
+                logger.debug(u'No need to list single subtitles %r for %r because one detected' % (languages, video))
                 continue
-        if not force and not multi and Language('Undetermined') in detected_languages:
-            logger.debug(u'No need to list single subtitles %r for %r because one detected' % (languages, video))
-            continue
-        logger.debug(u'Listing subtitles %r for %r with services %r' % (wanted_languages, video, services))
-        for service_name in services:
-            mod = __import__('services.' + service_name, globals=globals(), locals=locals(), fromlist=['Service'], level=-1)
-            service = mod.Service
-            if not service.check_validity(video, wanted_languages):
-                continue
-            task = ListTask(video, wanted_languages & service.languages, service_name, config)
-            logger.debug(u'Created task %r' % task)
-            tasks.append(task)
-    return tasks
+            logger.debug(u'Listing subtitles %r for %r with services %r' % (wanted_languages, video, services))
+            for service_name in services:
+                mod = __import__('services.' + service_name, globals=globals(), locals=locals(), fromlist=['Service'], level=-1)
+                service = mod.Service
+                if not service.check_validity(video, wanted_languages):
+                    continue
+                task = ListTask(video, wanted_languages & service.languages, service_name, config)
+                logger.debug(u'Created task %r' % task)
+                tasks.append(task)
+        return tasks
+
+    if not fileexists:
+        
+        for p in paths:
+             video = scandescription(p)
+             for service_name in services:
+                mod = __import__('services.' + service_name, globals=globals(), locals=locals(), fromlist=['Service'], level=-1)
+                service = mod.Service
+                if not service.check_validity(video, wanted_languages):
+                    continue
+                task = ListTask(video, wanted_languages & service.languages, service_name, config)
+                logger.debug(u'Created task %r' % task)
+                tasks.append(task)
+        return tasks
+
+
 
 
 def create_download_tasks(subtitles_by_video, languages, multi):
